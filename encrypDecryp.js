@@ -1,5 +1,6 @@
 const Cryptr = require('cryptr');
-const cryptr = new Cryptr('48y02hfiohqnn8u74@frwy');
+require('dotenv').config({ path: `./config.env` });
+const cryptr = new Cryptr(process.env.asdf);
 
 
 
