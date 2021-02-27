@@ -1,7 +1,7 @@
 const express = require('express');
 const logger = require('morgan');
 const compression = require('compression')
-const chalk = require('chalk');
+const log = require('./log');
 
 // Variables
 const PORT = process.env.PORT || 3000;
@@ -29,5 +29,5 @@ app.use((req, res, next) => {
 
 require('./bot')();
 app.listen(PORT, () => {
-    console.log(chalk.greenBright('[Web]'), `Web Server Listening on Port ${PORT}`);
+    log.web(`Web Server Listening on Port ${PORT}`)
 });

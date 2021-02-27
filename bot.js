@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const MongoDB = require('mongodb');
 const cryptFunctions = require('./encrypDecryp');
 const chalk = require('chalk');
+const log = require('./log');
 
 
 dotenv.config({
@@ -22,7 +23,7 @@ client.db = undefined;
 client.devs = process.env.devs.split(',')
 DBClient.connect().then(async () => {
     client.db = DBClient.db('auth-bot').collection('auth');
-    console.log(chalk.cyanBright('[System]'), 'Connect DB');
+    log.system('Connect DB');
 });
 
 
@@ -66,35 +67,35 @@ console.table(tableData);
 
 module.exports = async () => {
     client.once('ready', () => {
-        console.log(chalk.cyanBright('[System]'), 'login on', client.user.tag);
+        log.bot('login on ' + client.user.tag);
     });
     
     client.on('ready', async () => {
         setInterval(() => {
             client.guilds.cache.map(async guild => {
-							if (!guild)	return;
-							
-							let guildDB = await client.db.findOne({_id: guild.id});
-							if (!guildDB) {
-									client.db.insertOne({
-										_id: guild.id,
-										channels: [],
-										isAuth: [],
-									});
-									return console.log(chalk.cyanBright('[System]'), 'Insert guild DB');
-							}
+                if (!guild)	return;
+                
+                let guildDB = await client.db.findOne({_id: guild.id});
+                if (!guildDB) {
+                    client.db.insertOne({
+                        _id: guild.id,
+                        channels: [],
+                        isAuth: [],
+                    });
+                    return log.system('Insert guild DB');
+                }
             });
         }, 3000);
     });
 
     client.once("reconnecting", () => {
         client.user.setActivity('다시 연결하는 중');
-        console.log(chalk.cyanBright('[System]'), "reconnecting");
+        log.bot("reconnecting");
     });
     
     client.once("disconnect", () => {
         client.user.setActivity('뷁')
-        console.log(chalk.cyanBright('[System]'), "disconnecting");
+        log.bot("disconnecting");
     });
     
     client.on('message', async message => {
@@ -107,9 +108,12 @@ module.exports = async () => {
         const args = message.content.slice(prefix.length).trim().split(/ +/g);
         const cmd = args.shift().toLowerCase();
     
-        if (client.commands.get(cmd) != undefined) {
-            client.commands.get(cmd).run(message, args, client);
-            return;
+        if (client.commands.get(cmd)) {
+            log.bot(`${message.author.tag} - ${message.content} : ${new Date()}`)
+            return client.commands.get(cmd).run(message, args, client);
+        } else if (client.aliases.get(cmd)) {
+            log.bot(`${message.author.tag} - ${message.content} : ${new Date()}`)
+            return client.commands.get(client.aliases.get(cmd)).run(message, args, client);
         }
     })
     
